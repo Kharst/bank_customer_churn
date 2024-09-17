@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Customer Churn Prediction API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            display: block;
+            overflow-y: auto;
+        }
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 900px;
+            margin: 40px auto;
+        }
+        h1 {
+            color: #4CAF50;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 1.2em;
+            color: #555;
+            margin-bottom: 20px;
+        }
+        footer {
+            font-size: 0.9em;
+            color: #888;
+        }
+        footer p {
+            margin-top: 30px;
+        }
+        form {
+            margin-top: 20px;
+        }
+        .form-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .form-group div {
+            width: 48%;
+        }
+        label {
+            font-size: 1em;
+            color: #333;
+            margin-bottom: 5px;
+            display: block;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 1em;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2em;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #prediction-result {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bank Customer Churn Prediction API</h1>
+        <p>Welcome to the Bank Customer Churn Prediction API! Enter customer details below to predict the likelihood of churn.</p>
+
+        <!-- Form for input data with two columns -->
+        <form id="prediction-form">
+            <div class="form-group">
+                <div>
+                    <label for="credit_score">Credit Score:</label>
+                    <input type="number" id="credit_score" name="credit_score" required>
+
+                    <label for="gender">Gender:</label>
+                    <select id="gender" name="gender">
+                        <option value="1">Male</option>
+                        <option value="0">Female</option>
+                    </select>
+
+                    <label for="age">Age:</label>
+                    <input type="number" id="age" name="age" required>
+
+                    <label for="tenure">Tenure:</label>
+                    <input type="number" id="tenure" name="tenure" required>
+
+                    <label for="balance">Balance:</label>
+                    <input type="number" id="balance" name="balance" step="0.01" required>
+                </div>
+                
+                <div>
+                    <label for="num_of_products">Number of Products:</label>
+                    <input type="number" id="num_of_products" name="num_of_products" required>
+
+                    <label for="has_cr_card">Has Credit Card:</label>
+                    <select id="has_cr_card" name="has_cr_card">
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+
+                    <label for="is_active_member">Is Active Member:</label>
+                    <select id="is_active_member" name="is_active_member">
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+
+                    <label for="estimated_salary">Estimated Salary:</label>
+                    <input type="number" id="estimated_salary" name="estimated_salary" step="0.01" required>
+
+                    <label for="geography_Germany">Geography (Germany):</label>
+                    <select id="geography_Germany" name="geography_Germany">
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+
+                    <label for="geography_Spain">Geography (Spain):</label>
+                    <select id="geography_Spain" name="geography_Spain">
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="button" onclick="submitForm()">Predict Churn</button>
+        </form>
+
+        <!-- Area to display the prediction result -->
+        <div id="prediction-result"></div>
+
+        <footer>
+            <p>Developed by Reuben Siwela</p>
+        </footer>
+    </div>
+
+    <script>
+        // JavaScript to handle form submission and display response
+        function submitForm() {
+            const form = document.getElementById('prediction-form');
+            const formData = new FormData(form);
+
+            // Convert formData to JSON object
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+
+            // Convert certain fields to integer or float if needed
+            data['credit_score'] = parseInt(data['credit_score']);
+            data['age'] = parseInt(data['age']);
+            data['tenure'] = parseInt(data['tenure']);
+            data['balance'] = parseFloat(data['balance']);
+            data['num_of_products'] = parseInt(data['num_of_products']);
+            data['has_cr_card'] = parseInt(data['has_cr_card']);
+            data['is_active_member'] = parseInt(data['is_active_member']);
+            data['estimated_salary'] = parseFloat(data['estimated_salary']);
+            data['geography_Germany'] = parseInt(data['geography_Germany']);
+            data['geography_Spain'] = parseInt(data['geography_Spain']);
+
+            // Send POST request to Flask server as JSON
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json' // Make sure the server expects JSON
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(result => {
+                // Display the result in the result div
+                const resultDiv = document.getElementById('prediction-result');
+                if (result.error) {
+                    resultDiv.innerHTML = `<p style="color: red;">Error: ${result.error}</p>`;
+                } else {
+                    resultDiv.innerHTML = `<p>Prediction: ${result.prediction ? 'Churn' : 'No Churn'}</p>
+                                           <p>Churn Probability: ${result.churn_probability.toFixed(2)}</p>`;
+                }
+            })
+            .catch(error => {
+                const resultDiv = document.getElementById('prediction-result');
+                resultDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            });
+        }
+    </script>
+</body>
+</html>
